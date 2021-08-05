@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Formulario CRM</title>
+    <link rel="stylesheet" href="https://cdn.metroui.org.ua/v4.3.2/css/metro-all.min.css">
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="grid">
+            <div class="row">
+                <div class="cell-md-4 offset-md-4">
+                    <form id="formulario" class="login-form mx-auto">
+                        <input name="publicid" type="hidden" value="123456abcdef" />
+                        <input type="hidden" name="leadsource" value="Web Site">
+                        <h3>Título</h3>
+                        <div class="remark">
+                            <p>Descripción</p>
+                        </div>
+                        <div class="row">
+                            <div class="cell-md-6"><label>Nombre *</label>
+                                <input type="text" placeholder="" name="firstname" class="metro-input" required="">
+                            </div>
+                            <div class="cell-md-6"><label>Apellido *</label>
+                                <input type="text" name="lastname" placeholder="" class="metro-input" required="">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="cell-md-12">
+                                <label>Email *</label>
+                                <input type="email" name="email" placeholder="" class="metro-input" required="">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="cell-md-12">
+                                <label>Celular *</label>
+                                <input type="tel" name="mobile" placeholder="" class="metro-input" required="">
+                            </div>
+                        </div>
+                         <div class="row">
+                            <div class="cell-md-12">
+                                <input type="hidden" name="questions" value="2">
+                                <input type="submit" class="button primary" value="Enviar">
+                            </div>
+                        </div>
+                    </form>
+                </div> <!-- cell-md-4 -->
+            </div> <!-- row -->
+        </div> <!-- grid -->
+    </div> <!-- container -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        $('#formulario')
+            .submit(function (e) {
+                Swal.fire({
+                    title: '',
+                    html: 'Procesando su solicitud',
+                    timer: 10000,
+                    timerProgressBar: true,
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                        timerInterval = setInterval(() => { }, 100)
+                    },
+                    onClose: () => {
+                        clearInterval(timerInterval)
+                    }
+                }).then((result) => {
+                    if (
+                        result.dismiss === Swal.DismissReason.timer
+                    ) { }
+                });
+                $.ajax({
+                    url: 'http://localhost/vtigercrm/modules/Webforms/capture.php',
+                    type: 'POST',
+                    data: new FormData(this),
+                    success: function (data) {
+                        var obj = JSON.parse(data);
+                        if (obj.success) {
+                            Swal.fire("Enviado", "Gracias, pronto nos estaremos comunicando con usted.", "success");
+                            $('#formulario').trigger("reset");
+                        } else {
+                            Swal.fire("Error", obj.error.message, "error");
+                        }
+                    },
+                    error: function () {
+                        clearInterval(timerInterval);
+                        Swal.fire("Error", "Error al enviar los datos, favor comunicarlo al administrador.", "error");
+                    },
+                    complete: function () {
+                        clearInterval(timerInterval);
+                        // STOP LOADING SPINNER
+                    },
+                    processData: false,
+                    contentType: false
+                });
+                e.preventDefault();
+            });
+    </script>
+</body>
+</html>
